@@ -2,6 +2,7 @@ import gmail from "./Modulo_Correo.js";
 import { EsNumero } from "./Modulo_Numeros.js";
 import { letras } from "./Modulo_Letras.js";
 import { remover } from "./Modulo_Remover.js";
+import {cantidad} from "./Modulo_Cantidad.js"
 
 
 const $formulario = document.querySelector("form");
@@ -19,47 +20,51 @@ const validar = (event) => {
 
     event.preventDefault();
 
-       if(nombre.value === "" || nombre.value.length < 3)   
-        {
-           nombre.classList.add("error")
-           nombre.focus();
-        }
+    const requeridos = document.querySelectorAll("form input,select[required]")
+    console.log(requeridos)
 
-        if(apellido.value === "")   
-            {
-               apellido.classList.add("error")
-               apellido.focus();
-            }
 
-        if(telefono.value === "")   
-            {
-                telefono.classList.add("error")
-                telefono.focus();
-            }
+      //  if(nombre.value === "" || nombre.value.length < 3)   
+      //   {
+      //      nombre.classList.add("error")
+      //      nombre.focus();
+      //   }
 
-        if(direccion.value === "")   
-            {
-                direccion.classList.add("error")
-                direccion.focus();
-            }
+      //   if(apellido.value === "")   
+      //       {
+      //          apellido.classList.add("error")
+      //          apellido.focus();
+      //       }
 
-        if(tipo.value === "")   
-            {
-                tipo.classList.add("error")
-                tipo.focus();
-            }
+      //   if(telefono.value === "")   
+      //       {
+      //           telefono.classList.add("error")
+      //           telefono.focus();
+      //       }
 
-        if(documento.value === "")   
-            {
-                documento.classList.add("error")
-                documento.focus();
-            }
+      //   if(direccion.value === "")   
+      //       {
+      //           direccion.classList.add("error")
+      //           direccion.focus();
+      //       }
 
-        if(correo.value === "")   
-            {
-              correo.classList.add("error")
-              correo.focus();
-            }
+      //   if(tipo.value === "")   
+      //       {
+      //           tipo.classList.add("error")
+      //           tipo.focus();
+      //       }
+
+      //   if(documento.value === "")   
+      //       {
+      //           documento.classList.add("error")
+      //           documento.focus();
+      //       }
+
+      //   if(correo.value === "")   
+      //       {
+      //         correo.classList.add("error")
+      //         correo.focus();
+      //       }
 }
 
 // const remover = (e, input) => {
@@ -144,8 +149,12 @@ correo.addEventListener("blur",(event) => {remover(event,correo)});
 correo.addEventListener("blur",(event) => {gmail(event,correo)});
 
 
-  nombre.addEventListener('keyup',(event)=>{
+  nombre.addEventListener('keypress',(event)=>{
     letras(event,nombre)
+  })
+
+  telefono.addEventListener("blur",()=>{
+    cantidad(telefono)
   })
 
   apellido.addEventListener('keypress',(event)=>{

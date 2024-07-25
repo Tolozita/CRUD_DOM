@@ -1,9 +1,9 @@
 export function letras(event, elemento) {
-    let letras = /^[a-zA-ZÀ-y/s]*$/;
-    if (letras.test(elemento.value))
+    let letras = /^[a-zA-ZÀ-ÿ/s]*$/;
+    if (letras.test(event.key))
         {
         console.log("correcto")
         } else{
-            // event.preventDefault()
+            event.preventDefault()
         }
 }

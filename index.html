@@ -11,27 +11,27 @@
 
             <form class="form" novalidate>
                     <label for="nombre">Nombre:</label>
-                    <input type="text" id="nombre" name="nombre" autocomplete="off" >
+                    <input type="text" id="nombre" name="nombre" autocomplete="off" required>
                     <label for="apellido">Apellido:</label>
-                    <input type="text" id="apellido" autocomplete="off">
+                    <input type="text" id="apellido" autocomplete="off" required>
                     <label for="correo">Correo:</label>
-                    <input type="email" id="email" autocomplete="off">
+                    <input type="email" id="email" autocomplete="off" required>
                     <label for="telefono">Teléfono:</label>
-                    <input type="tel" id="telefono" autocomplete="off">
+                    <input type="tel" id="telefono" autocomplete="off" required>
                     <label for="direccion">Dirección:</label>
-                    <input type="text" id="direccion" autocomplete="off">
+                    <input type="text" id="direccion" autocomplete="off" required>
                     <label for="tipo-documento">Tipo de Documento:</label>
-                    <select id="tipo" name="tipo">
+                    <select id="tipo" name="tipo" required>
                         <option value="">Seleccione</option>
                         <option value="1">Cedula</option>
                         <option value="2">Tarjeta Identidad</option>
                     </select>
                     <label for="documento">Documento:</label>
-                    <input type="text" id="documento" autocomplete="off">
+                    <input type="text" id="documento" autocomplete="off" required>
 
 
                     <div>
-                        <input type="checkbox" id="politicas">
+                        <input type="checkbox" id="politicas" required>
                         <label for="politicas">
                             Acepta Politicas de Uso
                         </label>
