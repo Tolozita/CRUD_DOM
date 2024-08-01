@@ -1,8 +1,10 @@
-import gmail from "./Modulo_Correo.js";
-import { EsNumero } from "./Modulo_Numeros.js";
-import { letras } from "./Modulo_Letras.js";
-import { remover } from "./Modulo_Remover.js";
-import {cantidad} from "./Modulo_Cantidad.js"
+import gmail from "./Modulos/Modulo_Correo.js";
+import { EsNumero } from "./Modulos/Modulo_Numeros.js";
+import is_letras from "./Modulos/Modulo_Letras.js";
+import { remover } from "./Modulos/Modulo_Remover.js";
+import {cantidad} from "./Modulos/Modulo_Cantidad.js"
+import is_valid from "./Modulos/Modulo_is-valid.js";
+import solicitud from "./Modulos/ajax.js";
 
 
 const $formulario = document.querySelector("form");
@@ -15,76 +17,43 @@ const documento = document.querySelector("#documento");
 const boton = document.querySelector("#botoncito")
 const politicas = document.querySelector("#politicas")
 const correo = document.querySelector("#email")
-
-const validar = (event) => {
-
-    event.preventDefault();
-
-    const requeridos = document.querySelectorAll("form input,select[required]")
-    console.log(requeridos)
+const fragmento = document.createDocumentFragment();
 
 
-      //  if(nombre.value === "" || nombre.value.length < 3)   
-      //   {
-      //      nombre.classList.add("error")
-      //      nombre.focus();
-      //   }
+const listar = () => {
+let data= solicitud("users")
+console.log(data)
 
-      //   if(apellido.value === "")   
-      //       {
-      //          apellido.classList.add("error")
-      //          apellido.focus();
-      //       }
-
-      //   if(telefono.value === "")   
-      //       {
-      //           telefono.classList.add("error")
-      //           telefono.focus();
-      //       }
-
-      //   if(direccion.value === "")   
-      //       {
-      //           direccion.classList.add("error")
-      //           direccion.focus();
-      //       }
-
-      //   if(tipo.value === "")   
-      //       {
-      //           tipo.classList.add("error")
-      //           tipo.focus();
-      //       }
-
-      //   if(documento.value === "")   
-      //       {
-      //           documento.classList.add("error")
-      //           documento.focus();
-      //       }
-
-      //   if(correo.value === "")   
-      //       {
-      //         correo.classList.add("error")
-      //         correo.focus();
-      //       }
+.then((data) => {
+  
+})
 }
 
-// const remover = (e, input) => {
-//     if(input.value != ""){
-//         input.classList.remove("error")
-//         input.classList.add("verify")
-//     }
-// }
+const t_documentos = () => {
+  fetch(`http://localhost:3000/documentos`)
+  .then((response) => response.json())
+  .then((data) => {
+  data.forEach(element =>{
+  
+    console.log(element);
+    let option = document.createElement("option")
+    option.value = element.first_name;
+    option.textContent = element.first_name;
+    fragmento.appendChild(option)
+  });
+  tipo.appendChild(fragmento)
+  })
 
-
-
+}
 
 addEventListener("DOMContentLoaded",(event)=>{
+  t_documentos();
+  listar();
 if (!politicas.checked) {
       boton.setAttribute("disabled","");
       console.log(boton)
     }
   });
-
-
 
 
 politicas.addEventListener("change", function(e){
@@ -94,51 +63,35 @@ politicas.addEventListener("change", function(e){
 });
 
 
-// function EsNumero(event) {
-//     if (!(event.keyCode >= 48 && event.keyCode <= 57)){event.preventDefault();}
-// }
-
-// function letras(event, elemento) {
-//     let letras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-//     if (letras.test(elemento.value))
-//         {
-//         console.log("correcto")
-//         } else{
-//         console.log("incorrecto")
-//         }
-// }
-
-// function gmail (event, elemento) {
-//   let ex_correo = /^[\w-._]+@[\w-._]+(\.[a-zA-Z]{2,4}){1,2}$/;
-  
-//   // /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/
-
-//   if(ex_correo.test(elemento.value)){
-//     correo.classList.add('verify');
-//     correo.classList.remove('error');
-//   }else{
-//     correo.classList.remove('verify');
-//     correo.classList.add('error');
-//   }
-
-//   if(elemento.value === ""){
-//     correo.classList.remove('verify');
-//     correo.classList.add('error');
-//   }
-
-// }
-
-
-
-  politicas.addEventListener("change", function(e){
-    if(e.target.checked){
-      boton.removeAttribute("disabled")
+  $formulario.addEventListener("submit",(event) => {
+    let response = is_valid(event, "form [required]")
+    //Capturar todos los atributos
+    const data = {
+      first_name: nombre.value,
+      last_name: apellido.value,
+      phone: telefono.value,
+      adress: direccion.value,
+      T_ID: tipo.value,
+      id: documento.value,
+      email: correo.value
     }
-  });
 
+    if(response){
+      alert("Datos Guardados")
+      fetch(`http://localhost:3000/users`,{
+      method: `POST`,
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    })
 
+    }
+    console.log(data)
+    
+    
+   })
 
-$formulario.addEventListener("submit",validar)
 nombre.addEventListener("blur",(event) => {remover(event,nombre)});
 apellido.addEventListener("blur",(event) => {remover(event,apellido)});
 telefono.addEventListener("blur",(event) => {remover(event,telefono)});
@@ -150,7 +103,7 @@ correo.addEventListener("blur",(event) => {gmail(event,correo)});
 
 
   nombre.addEventListener('keypress',(event)=>{
-    letras(event,nombre)
+    is_letras(event,nombre)
   })
 
   telefono.addEventListener("blur",()=>{
@@ -158,12 +111,8 @@ correo.addEventListener("blur",(event) => {gmail(event,correo)});
   })
 
   apellido.addEventListener('keypress',(event)=>{
-    letras(event,apellido)
+    is_letras(event,apellido)
   })
-
-  // correo.addEventListener('keypress',(event) => {
-  //   gmail(event,correo)
-  // })
 
   telefono.addEventListener('keypress',EsNumero)
   documento.addEventListener('keypress',EsNumero)
