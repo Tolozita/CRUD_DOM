@@ -18,32 +18,71 @@ const boton = document.querySelector("#botoncito")
 const politicas = document.querySelector("#politicas")
 const correo = document.querySelector("#email")
 const fragmento = document.createDocumentFragment();
+const tbUsers = document.querySelector("#tp_users").content;
+const tbody = document.querySelector("tbody")
 
 
-const listar = () => {
-let data= solicitud("users")
+
+const listar = async () => {
+const data = await solicitud("users")
 console.log(data)
+data.forEach(element => {
+  console.log(tbUsers.querySelector(".nombre").textContent = element.first_name)
+  console.log(tbUsers.querySelector(".apellido").textContent = element.last_name)
+  console.log(tbUsers.querySelector(".correo").textContent = element.email)
+  console.log(tbUsers.querySelector(".telefono").textContent = element.phone)
+  console.log(tbUsers.querySelector(".direccion").textContent = element.adress)
+  console.log(tbUsers.querySelector(".tipo").textContent = element.T_ID)
+  console.log(tbUsers.querySelector(".documento").textContent = element.id)
+  console.log("------------------------------------------------")
 
-.then((data) => {
-  
+
+  const clone = document.importNode(tbUsers, true)
+  fragmento.appendChild(clone)
 })
+tbody.appendChild(fragmento)
+}
+
+const createRow = (data) =>{
+
+ const tr = tbody.insertRow(-1)
+ 
+ const tdNombre = tr.insertCell(0)
+ const tdApellido = tr.insertCell(1)
+ const tdCorreo = tr.insertCell(2)
+ const tdTelefono = tr.insertCell(3)
+ const tdDireccion = tr.insertCell(4)
+ const tdTipo_Doc = tr.insertCell(5)
+ const tdDocumento = tr.insertCell(6)
+
+ tdNombre.textContent = data.first_name;
+ tdApellido.textContent = data.last_name;
+ tdCorreo.textContent = data.email;
+ tdTelefono.textContent = data.phone;
+ tdDireccion.textContent = data.adress;
+ tdTipo_Doc.textContent = data.T_ID;
+ tdDocumento.textContent = data.id;
+
+
+
+
 }
 
 const t_documentos = () => {
-  fetch(`http://localhost:3000/documentos`)
-  .then((response) => response.json())
+  solicitud("documentos")
   .then((data) => {
-  data.forEach(element =>{
-  
-    console.log(element);
+    let option = document.createElement("option")
+    option.textContent = "Seleccione....";
+    option.value = "0"
+    fragmento.appendChild(option);
+    data.forEach(element =>{
     let option = document.createElement("option")
     option.value = element.first_name;
     option.textContent = element.first_name;
-    fragmento.appendChild(option)
+    fragmento.appendChild(option);
   });
-  tipo.appendChild(fragmento)
-  })
-
+  tipo.appendChild(fragmento);
+  });
 }
 
 addEventListener("DOMContentLoaded",(event)=>{
@@ -85,12 +124,23 @@ politicas.addEventListener("change", function(e){
         'Content-Type': 'application/json; charset=UTF-8',
       },
     })
+    .then((response) => response.json())
+    .then((json) => {
+      nombre.value = "";
+      apellido.value = "";
+      correo.value = "";
+      telefono.value = "";
+      direccion.value = "";
+      tipo.selectedIndex = "0";
+      politicas.checked = false;
+      documento.value = "";
+      boton.setAttribute("disabled","")
 
+      createRow(json)
+    })
     }
-    console.log(data)
-    
-    
    })
+
 
 nombre.addEventListener("blur",(event) => {remover(event,nombre)});
 apellido.addEventListener("blur",(event) => {remover(event,apellido)});

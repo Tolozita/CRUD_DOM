@@ -49,3 +49,28 @@ button:hover{
     cursor:initial;
     color: #979797;
  }
+
+ .container{
+    max-width: 1600px;
+    background-color: brown;
+    margin: 0 auto;
+ }
+
+ .tabla{
+    background-color: rgb(100, 148, 237);
+ }
+
+ .mt-40{
+    margin-top: 40px;
+ }
+
+ .mb-40{
+    margin-bottom: 40px;
+ }
+
+ .layout{
+    display: grid;
+    grid-template-areas: "Formulario" "tabla";
+    grid-template-columns: 450px 1fr;
+    gap: 1rem;
+ }
