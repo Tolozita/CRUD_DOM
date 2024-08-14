@@ -11,7 +11,7 @@ nombre.addEventListener("keypress", is_letras)
 $formulario.addEventListener("submit",(event) => {
     let response = is_valid(event, "form [required]")
     const data = {
-        first_name: nombre.value
+        type_id: nombre.value
     }
     if (response){
       fetch(`http://localhost:3000/documentos`,{

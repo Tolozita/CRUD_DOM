@@ -21,21 +21,27 @@ const fragmento = document.createDocumentFragment();
 const tbUsers = document.querySelector("#tp_users").content;
 const tbody = document.querySelector("tbody")
 
-
-
 const listar = async () => {
 const data = await solicitud("users")
-console.log(data)
+const documentos = await solicitud("documentos")
+
+
 data.forEach(element => {
+
+let nombre = documentos.find((documento) => documento.id === element.T_ID).type_id;
+console.log(nombre)
+
   console.log(tbUsers.querySelector(".nombre").textContent = element.first_name)
   console.log(tbUsers.querySelector(".apellido").textContent = element.last_name)
   console.log(tbUsers.querySelector(".correo").textContent = element.email)
   console.log(tbUsers.querySelector(".telefono").textContent = element.phone)
   console.log(tbUsers.querySelector(".direccion").textContent = element.adress)
-  console.log(tbUsers.querySelector(".tipo").textContent = element.T_ID)
+  console.log(tbUsers.querySelector(".tipo").textContent = nombre)
   console.log(tbUsers.querySelector(".documento").textContent = element.id)
   console.log("------------------------------------------------")
 
+  tbUsers.querySelector(".Modificar").setAttribute("data-id",element.id)
+  tbUsers.querySelector(".Eliminar").setAttribute("data-id",element.id)
 
   const clone = document.importNode(tbUsers, true)
   fragmento.appendChild(clone)
@@ -62,10 +68,16 @@ const createRow = (data) =>{
  tdDireccion.textContent = data.adress;
  tdTipo_Doc.textContent = data.T_ID;
  tdDocumento.textContent = data.id;
+}
 
+document.addEventListener("click", ((event) => {
+  if(event.target.matches(".Modificar")){
+    buscar(event.target)//
+  }
+  }))
 
-
-
+const buscar = (element) => {
+console.log(element.dataset.id)
 }
 
 const t_documentos = () => {
@@ -77,8 +89,8 @@ const t_documentos = () => {
     fragmento.appendChild(option);
     data.forEach(element =>{
     let option = document.createElement("option")
-    option.value = element.first_name;
-    option.textContent = element.first_name;
+    option.value = element.id;
+    option.textContent = element.type_id;
     fragmento.appendChild(option);
   });
   tipo.appendChild(fragmento);
