@@ -4,7 +4,7 @@ import is_letras from "./Modulos/Modulo_Letras.js";
 import { remover } from "./Modulos/Modulo_Remover.js";
 import {cantidad} from "./Modulos/Modulo_Cantidad.js"
 import is_valid from "./Modulos/Modulo_is-valid.js";
-import solicitud from "./Modulos/ajax.js";
+import solicitud, { enviar } from "./Modulos/ajax.js";
 
 
 const $formulario = document.querySelector("form");
@@ -78,6 +78,14 @@ document.addEventListener("click", ((event) => {
 
 const buscar = (element) => {
 console.log(element.dataset.id)
+enviar(`users/${element.dataset.id}` ,{
+method: "PATCH",
+headers: {
+  'Content-Type': 'application/json; charset=UTF-8',
+}
+}).then((data)=> {
+  console.log(data)
+})
 }
 
 const t_documentos = () => {
@@ -255,3 +263,4 @@ nombre.addEventListener('keyup', function() {
       correo.classList.add('error');
     }
   });
+
