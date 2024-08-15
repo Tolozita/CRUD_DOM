@@ -20,6 +20,8 @@ const correo = document.querySelector("#email")
 const fragmento = document.createDocumentFragment();
 const tbUsers = document.querySelector("#tp_users").content;
 const tbody = document.querySelector("tbody")
+const usuario = document.querySelector("#user")
+const tr_fila = document.querySelector(".fila")
 
 const listar = async () => {
 const data = await solicitud("users")
@@ -29,16 +31,14 @@ const documentos = await solicitud("documentos")
 data.forEach(element => {
 
 let nombre = documentos.find((documento) => documento.id === element.T_ID).type_id;
-console.log(nombre)
 
-  console.log(tbUsers.querySelector(".nombre").textContent = element.first_name)
-  console.log(tbUsers.querySelector(".apellido").textContent = element.last_name)
-  console.log(tbUsers.querySelector(".correo").textContent = element.email)
-  console.log(tbUsers.querySelector(".telefono").textContent = element.phone)
-  console.log(tbUsers.querySelector(".direccion").textContent = element.adress)
-  console.log(tbUsers.querySelector(".tipo").textContent = nombre)
-  console.log(tbUsers.querySelector(".documento").textContent = element.id)
-  console.log("------------------------------------------------")
+  tbUsers.querySelector(".nombre").textContent = element.first_name
+  tbUsers.querySelector(".apellido").textContent = element.last_name
+  tbUsers.querySelector(".correo").textContent = element.email
+  tbUsers.querySelector(".telefono").textContent = element.phone
+  tbUsers.querySelector(".direccion").textContent = element.adress
+  tbUsers.querySelector(".tipo").textContent = nombre
+  tbUsers.querySelector(".documento").textContent = element.id
 
   tbUsers.querySelector(".Modificar").setAttribute("data-id",element.id)
   tbUsers.querySelector(".Eliminar").setAttribute("data-id",element.id)
@@ -52,7 +52,6 @@ tbody.appendChild(fragmento)
 const createRow = (data) =>{
 
  const tr = tbody.insertRow(-1)
- 
  const tdNombre = tr.insertCell(0)
  const tdApellido = tr.insertCell(1)
  const tdCorreo = tr.insertCell(2)
@@ -76,16 +75,127 @@ document.addEventListener("click", ((event) => {
   }
   }))
 
-const buscar = (element) => {
-console.log(element.dataset.id)
-enviar(`users/${element.dataset.id}` ,{
+const buscar = async (element) => {
+const data = await enviar(`users/${element.dataset.id}` ,{
 method: "PATCH",
 headers: {
   'Content-Type': 'application/json; charset=UTF-8',
 }
-}).then((data)=> {
+});
+  loadForm(data)
+}
+
+
+const save = (event) =>{
+
+let response = is_valid(event, "form [required]")
+  //Capturar todos los atributos
+
+  const data = {
+    first_name: nombre.value,
+    last_name: apellido.value,
+    phone: telefono.value,
+    adress: direccion.value,
+    T_ID: tipo.value,
+    id: documento.value,
+    email: correo.value
+  }
+  if (response){
+
+    if(usuario.value ==""){
+        guardar(data)
+      }
+      else{
+        actualizar(data)
+      }
+    
+    }
+}
+
+const limpiarForm= (data) => {
+  nombre.value = "";
+  apellido.value = "";
+  correo.value = "";
+  telefono.value = "";
+  direccion.value = "";
+  tipo.selectedIndex = "0";
+  politicas.checked = false;
+  documento.value = "";
+  boton.setAttribute("disabled","")
+}
+
+
+const guardar = (data) =>{
   console.log(data)
+  fetch(`http://localhost:3000/users`,{
+    method: `POST`,
+    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+  })
+  .then((response) => response.json())
+  .then((json) => {
+    limpiarForm(data)
+    createRow(json)
+  });
+
+}
+
+// const removeRow = (data) => {
+//  const tr = tbody.deleteRow(-1)
+//  const tdNombre = tr.removeCell(0)
+//  const tdApellido = tr.removeCell(1)
+//  const tdCorreo = tr.removeCell(2)
+//  const tdTelefono = tr.removeCell(3)
+//  const tdDireccion = tr.removeCell(4)
+//  const tdTipo_Doc = tr.removeCell(5)
+//  const tdDocumento = tr.removeCell(6)
+// }
+
+const actualizar = async(data) =>{
+console.log(data,user.value)
+
+const response = await enviar(`users/${user.value}`, {
+  method: 'PUT',
+  body: JSON.stringify(data),
+  headers: {
+    'Content-type': 'application/json; charset=UTF-8',
+  },
+}).then((data) => {
+  createRow(data)
+  limpiarForm(data)
+  // removeRow(data)
 })
+}
+
+
+
+
+
+const loadForm=(data) =>{
+  console.log(data)
+  const {
+    first_name,
+    last_name,
+    email,
+    phone,
+    adress,
+    T_ID,
+    id
+  } = data;
+
+  usuario.value = id
+  nombre.value=first_name
+  apellido.value=last_name
+  correo.value=email
+  telefono.value=phone
+  direccion.value=adress
+  tipo.value=T_ID
+  documento.value=id
+  politicas.checked = true;
+  boton.removeAttribute("disabled","")
+
 }
 
 const t_documentos = () => {
@@ -110,7 +220,6 @@ addEventListener("DOMContentLoaded",(event)=>{
   listar();
 if (!politicas.checked) {
       boton.setAttribute("disabled","");
-      console.log(boton)
     }
   });
 
@@ -122,44 +231,7 @@ politicas.addEventListener("change", function(e){
 });
 
 
-  $formulario.addEventListener("submit",(event) => {
-    let response = is_valid(event, "form [required]")
-    //Capturar todos los atributos
-    const data = {
-      first_name: nombre.value,
-      last_name: apellido.value,
-      phone: telefono.value,
-      adress: direccion.value,
-      T_ID: tipo.value,
-      id: documento.value,
-      email: correo.value
-    }
-
-    if(response){
-      alert("Datos Guardados")
-      fetch(`http://localhost:3000/users`,{
-      method: `POST`,
-      body: JSON.stringify(data),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-    })
-    .then((response) => response.json())
-    .then((json) => {
-      nombre.value = "";
-      apellido.value = "";
-      correo.value = "";
-      telefono.value = "";
-      direccion.value = "";
-      tipo.selectedIndex = "0";
-      politicas.checked = false;
-      documento.value = "";
-      boton.setAttribute("disabled","")
-
-      createRow(json)
-    })
-    }
-   })
+  $formulario.addEventListener("submit",save)
 
 
 nombre.addEventListener("blur",(event) => {remover(event,nombre)});
