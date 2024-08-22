@@ -1,10 +1,11 @@
-import gmail from "./Modulos/Modulo_Correo.js";
-import { EsNumero } from "./Modulos/Modulo_Numeros.js";
-import is_letras from "./Modulos/Modulo_Letras.js";
-import { remover } from "./Modulos/Modulo_Remover.js";
-import {cantidad} from "./Modulos/Modulo_Cantidad.js"
-import is_valid from "./Modulos/Modulo_is-valid.js";
-import solicitud, { enviar } from "./Modulos/ajax.js";
+import solicitud, { enviar } from "./modulos/ajax.js";
+import { URL } from "./modulos/config.js";
+import isCorreo from "./modulos/correo.js";
+import Sololetra from "./modulos/letras.js";
+import numeros from "./modulos/numeros.js";
+import remover from "./modulos/remover.js";
+import is_valid from "./modulos/validar.js";
+
 
 
 const $formulario = document.querySelector("form");
@@ -12,327 +13,405 @@ const nombre = document.querySelector("#nombre");
 const apellido = document.querySelector("#apellido");
 const telefono = document.querySelector("#telefono");
 const direccion = document.querySelector("#direccion");
-const tipo = document.querySelector("#tipo");
+const tipo_documento = document.querySelector("#tipo_documento");
 const documento = document.querySelector("#documento");
-const boton = document.querySelector("#botoncito")
-const politicas = document.querySelector("#politicas")
-const correo = document.querySelector("#email")
+const politicas = document.querySelector("#politicas");
+const correo = document.querySelector("#correo");
+const button = document.querySelector("#button");
+const tb_users = document.querySelector("#tb_users").content;
 const fragmento = document.createDocumentFragment();
-const tbUsers = document.querySelector("#tp_users").content;
-const tbody = document.querySelector("tbody")
-const usuario = document.querySelector("#user")
-const tr_fila = document.querySelector(".fila")
-
-const listar = async () => {
-const data = await solicitud("users")
-const documentos = await solicitud("documentos")
+const tbody = document.querySelector("tbody");
+const user = document.querySelector("#user");
 
 
-data.forEach(element => {
+console.log(tb_users);
 
-let nombre = documentos.find((documento) => documento.id === element.T_ID).type_id;
+const cantidad = (elemento) => {
+    let value = elemento.value.length === 10;
+    if (value) {
+        elemento.classList.remove("correcto")
+        elemento.classList.add("error")
+    }else{
+        elemento.classList.remove("error")
+        elemento.classList.add("cantidad")
+    }
+}
 
-  tbUsers.querySelector(".nombre").textContent = element.first_name
-  tbUsers.querySelector(".apellido").textContent = element.last_name
-  tbUsers.querySelector(".correo").textContent = element.email
-  tbUsers.querySelector(".telefono").textContent = element.phone
-  tbUsers.querySelector(".direccion").textContent = element.adress
-  tbUsers.querySelector(".tipo").textContent = nombre
-  tbUsers.querySelector(".documento").textContent = element.id
+const documentos = () => {
+    const fragmento = document.createDocumentFragment()
+    fetch(`${URL}/documents`)
+      .then(response => response.json())
+      .then((data)=> {
+        let option = document.createElement("option")
+        option.textContent = "Seleccione ...."
+        option.value = "";
+        fragmento.appendChild(option)
+        data.forEach(element => {
+        let option = document.createElement("option");
+        option.value = element.id;
+        option.textContent = element.name;
+        fragmento.appendChild(option)
+        });
+        tipo_documento.appendChild(fragmento)
+      });
+}
 
-  tbUsers.querySelector(".Modificar").setAttribute("data-id",element.id)
-  tbUsers.querySelector(".Eliminar").setAttribute("data-id",element.id)
+const listar = async(page) => {
 
-  const clone = document.importNode(tbUsers, true)
-  fragmento.appendChild(clone)
-})
-tbody.appendChild(fragmento)
+    const _page = page ? page : 1;
+
+    const data = await solicitud(`users?_page=${_page}&_per_page=12`);
+    const documentos = await solicitud("documents")
+    const nav = document.querySelector(".navigation")
+    
+
+    const first = data.first;
+    const prev = data.prev;
+    const next = data.next;
+    const last = data.last;
+
+    console.log("first",first);
+    console.log("prev",prev);
+    console.log("next",next);
+    console.log("last",last);
+
+    
+
+    nav.querySelector(".first").disabled=prev ? false : true;
+    nav.querySelector(".prev").disabled=prev ? false :true
+    nav.querySelector(".next").disabled=next ? false :true
+    nav.querySelector(".last").disabled=next ? false :true
+
+
+    nav.querySelector(".first").setAttribute("data-first",first)
+    nav.querySelector(".prev").setAttribute("data-prev",prev)
+    nav.querySelector(".next").setAttribute("data-next",next)
+    nav.querySelector(".last").setAttribute("data-last",last)
+
+    console.log(nav)
+
+    console.log(data);
+    
+    
+    data.data.forEach(element =>{
+        let nombre = documentos.find((documento) => documento.id === element.type_id).name;
+        
+        // tb_users.querySelector("tr").setAttribute("id", `user_${element.id}`)
+        tb_users.querySelector("tr").id = `user_${element.id}`;
+        
+        tb_users.querySelector(".nombre").textContent = element.first_name;
+        tb_users.querySelector(".apellido").textContent = element.last_name;
+        tb_users.querySelector(".direccion").textContent = element.address;
+        tb_users.querySelector(".correo").textContent = element.email;
+        tb_users.querySelector(".telefono").textContent = element.phone;
+        tb_users.querySelector(".tipo_documento").textContent = nombre;
+        tb_users.querySelector(".documento").textContent = element.document;
+
+        tb_users.querySelector(".modificar").setAttribute("data-id",element.id)
+        tb_users.querySelector(".eliminar").setAttribute("data-id",element.id)
+
+        const clone =document.importNode(tb_users, true);
+        fragmento.appendChild(clone);
+    })
+    tbody.appendChild(fragmento);
+
 }
 
 const createRow = (data) =>{
+    const tr = tbody.insertRow(-1);
 
- const tr = tbody.insertRow(-1)
- const tdNombre = tr.insertCell(0)
- const tdApellido = tr.insertCell(1)
- const tdCorreo = tr.insertCell(2)
- const tdTelefono = tr.insertCell(3)
- const tdDireccion = tr.insertCell(4)
- const tdTipo_Doc = tr.insertCell(5)
- const tdDocumento = tr.insertCell(6)
+    const tdnombre = tr.insertCell(0);
+    const tdapellido = tr.insertCell(1);
+    const tddireccion = tr.insertCell(2);
+    const tdcorreo = tr.insertCell(3);
+    const tdtelefono = tr.insertCell(4);
+    const tdtipo_doc = tr.insertCell(5);
+    const tddocumento = tr.insertCell(6);
 
- tdNombre.textContent = data.first_name;
- tdApellido.textContent = data.last_name;
- tdCorreo.textContent = data.email;
- tdTelefono.textContent = data.phone;
- tdDireccion.textContent = data.adress;
- tdTipo_Doc.textContent = data.T_ID;
- tdDocumento.textContent = data.id;
+    tdnombre.textContent = data.first_name;
+    tdapellido.textContent = data.last_name;
+    tddireccion.textContent = data.address;
+    tdcorreo.textContent = data.email;
+    tdtelefono.textContent = data.phone;
+    tdtipo_doc.textContent = data.type_id;
+    tddocumento.textContent = data.document;
 }
 
-document.addEventListener("click", ((event) => {
-  if(event.target.matches(".Modificar")){
-    buscar(event.target)//
-  }
-  }))
-
-const buscar = async (element) => {
-const data = await enviar(`users/${element.dataset.id}` ,{
-method: "PATCH",
-headers: {
-  'Content-Type': 'application/json; charset=UTF-8',
-}
-});
-  loadForm(data)
+const buscar = async(element) =>{
+   const data = await enviar(`users/${element.dataset.id}`, //endpoint
+    {
+        method: "PATCH",
+        headers:{
+            'Content-type': 'application/json; charset=UTF-8',
+        }
+    });
+    loadForm(data)
 }
 
+const save = (event) =>  {
+    let response = is_valid(event, "form [required]");
+    const data ={
+        first_name: nombre.value,
+        last_name: apellido.value,
+        address: direccion.value,
+        type_id: tipo_documento.value,
+        email: correo.value,
+        phone: telefono.value,
+        document: documento.value,
+        }
+        if (response) {
+            if(user.value === ""){
+                guardar(data)
+            }else{
+                actualizar(data)
+                console.log(document);
+                
+            }
+            
+        }
+}
 
-const save = (event) =>{
 
-let response = is_valid(event, "form [required]")
-  //Capturar todos los atributos
+const guardar = (data) => {
+    fetch(`${URL}/users`,{
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8',
+            },
+        })
+        .then((response) => response.json())
+        .then((json) => {
+            nombre.value = "";
+            apellido.value = "";
+            telefono.value = "";
+            direccion.value = "";
+            tipo_documento.selectedIndex = 0;
+            documento.value = "";
+            politicas.value = false;
+            correo.value = "";
 
-  const data = {
-    first_name: nombre.value,
-    last_name: apellido.value,
-    phone: telefono.value,
-    adress: direccion.value,
-    T_ID: tipo.value,
-    id: documento.value,
-    email: correo.value
-  }
-  if (response){
 
-    if(usuario.value ==""){
-        guardar(data)
-      }
-      else{
-        actualizar(data)
-      }
+            limpiarForm()
+
+            createRow(json)
+
+        });
+    }
+
+    const eliminar = async (element) =>{
     
+        let id = element.dataset.id
+        const tr = document.querySelector(`#user_${id}`)
+        const username = tr.querySelector(".nombre").textContent;
+        const confirmDelete = confirm(`Desea eliminar a: ${username}`)
+
+        if(confirmDelete){
+           const data = await enviar(`users/${id}`, //endpoint
+            {
+                method: "DELETE",
+                headers:{
+                    'Content-type': 'application/json; charset=UTF-8',
+                }
+            });
+            tr.remove()
+        }
     }
-}
-
-const limpiarForm= (data) => {
-  nombre.value = "";
-  apellido.value = "";
-  correo.value = "";
-  telefono.value = "";
-  direccion.value = "";
-  tipo.selectedIndex = "0";
-  politicas.checked = false;
-  documento.value = "";
-  boton.setAttribute("disabled","")
-}
+    
 
 
-const guardar = (data) =>{
-  console.log(data)
-  fetch(`http://localhost:3000/users`,{
-    method: `POST`,
-    body: JSON.stringify(data),
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-  })
-  .then((response) => response.json())
-  .then((json) => {
-    limpiarForm(data)
-    createRow(json)
-  });
-
-}
-
-// const removeRow = (data) => {
-//  const tr = tbody.deleteRow(-1)
-//  const tdNombre = tr.removeCell(0)
-//  const tdApellido = tr.removeCell(1)
-//  const tdCorreo = tr.removeCell(2)
-//  const tdTelefono = tr.removeCell(3)
-//  const tdDireccion = tr.removeCell(4)
-//  const tdTipo_Doc = tr.removeCell(5)
-//  const tdDocumento = tr.removeCell(6)
-// }
-
-const actualizar = async(data) =>{
-console.log(data,user.value)
-
-const response = await enviar(`users/${user.value}`, {
-  method: 'PUT',
-  body: JSON.stringify(data),
-  headers: {
+const actualizar = async (data) => {
+    const response = await enviar(`users/${user.value}`,{
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: {
     'Content-type': 'application/json; charset=UTF-8',
-  },
-}).then((data) => {
-  createRow(data)
-  limpiarForm(data)
-  // removeRow(data)
-})
-}
-
-
-
-
-
-const loadForm=(data) =>{
-  console.log(data)
-  const {
-    first_name,
-    last_name,
-    email,
-    phone,
-    adress,
-    T_ID,
-    id
-  } = data;
-
-  usuario.value = id
-  nombre.value=first_name
-  apellido.value=last_name
-  correo.value=email
-  telefono.value=phone
-  direccion.value=adress
-  tipo.value=T_ID
-  documento.value=id
-  politicas.checked = true;
-  boton.removeAttribute("disabled","")
-
-}
-
-const t_documentos = () => {
-  solicitud("documentos")
-  .then((data) => {
-    let option = document.createElement("option")
-    option.textContent = "Seleccione....";
-    option.value = "0"
-    fragmento.appendChild(option);
-    data.forEach(element =>{
-    let option = document.createElement("option")
-    option.value = element.id;
-    option.textContent = element.type_id;
-    fragmento.appendChild(option);
-  });
-  tipo.appendChild(fragmento);
-  });
-}
-
-addEventListener("DOMContentLoaded",(event)=>{
-  t_documentos();
-  listar();
-if (!politicas.checked) {
-      boton.setAttribute("disabled","");
     }
-  });
+    });
+    limpiarForm()
+    ediRow(response)
+    
+}
 
+const limpiarForm = () => {
+    nombre.value = "";
+    apellido.value = "";
+    telefono.value = "";
+    direccion.value = "";
+    correo.value = "";
+    tipo_documento.value = "";
+    documento.value = "";
+    politicas.checked = false;
+    button.removeAttribute ("disabled")
+}
+
+const ediRow = async (data) => {
+    const documentos = await solicitud("documents")
+    let nombre = documentos.find((documento)=> documento.id === data.type_id). name
+    const tr = document.querySelector(`#user_${data.id}`)
+    // nombre = tr.querySelector(".nombre");
+   tr.querySelector(".nombre").textContent = data.first_name;
+   tr.querySelector(".apellido").textContent = data.last_name;
+   tr.querySelector(".direccion").textContent = data.address;
+   tr.querySelector(".tipo_documento").textContent = nombre;
+   tr.querySelector(".correo").textContent = data.email;
+   tr.querySelector(".telefono").textContent = data.phone;
+   tr.querySelector(".documento").textContent = data.document;
+   
+};
+
+const loadForm = (data) => {
+    const {
+        id,
+        first_name,
+        last_name,
+        phone,
+        address,
+        email,
+        type_id,
+        document,
+    } =  data;
+
+    user.value = id;
+    nombre.value = data.first_name;
+    apellido.value = data.last_name;
+    telefono.value = data.phone;
+    direccion.value = data.address;
+    correo.value = data.email;
+    tipo_documento.value = data.type_id;
+    documento.value = data.document;
+    politicas.checked = true;
+    button.removeAttribute("disabled", "")
+}
+
+//boton enviar hasta que se acepten las politicaseListener("DOMContentLoadee)=>{
+
+addEventListener("DOMContentLoaded",(event) => {
+    documentos();
+    listar();
+    //console.log(politicas.checked);
+    if(!politicas.checked){
+        // console.log(boton);
+        button.setAttribute("disabled", "");
+    };
+})
+    
+
+
+
+document.addEventListener("click", (e) =>{
+    if (e.target.matches(".modificar")) {  
+    buscar(e.target)  
+    }
+
+    if(e.target.matches(".eliminar")){
+        eliminar(e.target)
+    }
+
+
+    if(e.target.matches(".first")){
+        const nodos = tbody
+        const first = e.target.dataset.first
+        while(nodos.firstChild){
+            nodos.removeChild(nodos.firstChild)
+        } 
+        listar(first)
+    }
+
+
+    if(e.target.matches(".prev")){
+        const nodos = tbody
+        const prev = e.target.dataset.prev
+        while(nodos.firstChild){
+            nodos.removeChild(nodos.firstChild)
+        }
+        listar(prev)
+    }
+
+
+    if(e.target.matches(".next")){
+        const nodos = tbody
+        const next = e.target.dataset.next
+        while(nodos.firstChild){
+            nodos.removeChild(nodos.firstChild)
+        }
+        listar(next)
+    }
+
+
+    if(e.target.matches(".last")){
+        const nodos = tbody
+        const last = e.target.dataset.last
+        console.log(last)
+        while(nodos.firstChild){
+            nodos.removeChild(nodos.firstChild)
+        }
+        listar(last)
+    }
+});
 
 politicas.addEventListener("change", function(e){
-  if(e.target.checked){
-    boton.removeAttribute("disabled")
-  }else boton.setAttribute("disabled","")
+    //console.log(e.target.checked);
+    if (e.target.checked) {
+        button.removeAttribute("disabled")
+    }
+});
+$formulario.addEventListener("submit" , save);
+
+nombre.addEventListener("blur", (event) => {
+    remover(event, nombre);
+});
+apellido.addEventListener("blur", (event) => {
+    remover(event, apellido);
+});
+telefono.addEventListener("blur", (event) => {
+    remover(event, telefono);
+});
+direccion.addEventListener("blur", (event) => {
+    remover(event, direccion);
+});
+tipo_documento.addEventListener("blur", (event) => {
+    remover(event, tipo_documento);
+});
+documento.addEventListener("blur", (event) => {
+    remover(event, documento);
+});
+correo.addEventListener("blur", (event) => {
+    remover(event, correo);
 });
 
 
-  $formulario.addEventListener("submit",save)
+$formulario.addEventListener("submit", is_valid);
+nombre.addEventListener("keydown", (event) => {
+    remover(event, nombre);
+});
+apellido.addEventListener("keydown", (event) => {
+    remover(event, apellido);
+});
+telefono.addEventListener("keydown", (event) => {
+    remover(event, telefono);
+});
+direccion.addEventListener("keydown", (event) => {
+    remover(event, direccion);
+});
+tipo_documento.addEventListener("keydown", (event) => {
+    remover(event, tipo_documento);
+});
+documento.addEventListener("keydown", (event) => {
+    remover(event, documento);
+});
+
+//boton enviar hasta que se acepten las politicas
 
 
-nombre.addEventListener("blur",(event) => {remover(event,nombre)});
-apellido.addEventListener("blur",(event) => {remover(event,apellido)});
-telefono.addEventListener("blur",(event) => {remover(event,telefono)});
-direccion.addEventListener("blur",(event) => {remover(event,direccion)});
-tipo.addEventListener("blur",(event) => {remover(event,tipo)});
-documento.addEventListener("blur",(event) => {remover(event,documento)});
-correo.addEventListener("blur",(event) => {remover(event,correo)});
-correo.addEventListener("blur",(event) => {gmail(event,correo)});
-
-
-  nombre.addEventListener('keypress',(event)=>{
-    is_letras(event,nombre)
-  })
-
-  telefono.addEventListener("blur",()=>{
-    cantidad(telefono)
-  })
-
-  apellido.addEventListener('keypress',(event)=>{
-    is_letras(event,apellido)
-  })
-
-  telefono.addEventListener('keypress',EsNumero)
-  documento.addEventListener('keypress',EsNumero)
-
-
-
-nombre.addEventListener('keyup', function() {
-    if (nombre.value === "") {
-      nombre.classList.remove('verify');
-      nombre.classList.add('error');
-    } else {
-      nombre.classList.remove('error');
-      nombre.classList.add('verify');
-    }
-  });
-
-
-  apellido.addEventListener('keyup', function() {
-    if (apellido.value === "") {
-        apellido.classList.remove('verify');
-        apellido.classList.add('error');
-    } else {
-        apellido.classList.remove('error');
-        apellido.classList.add('verify');
-    }
-  });
-
-
-  telefono.addEventListener('keyup', function() {
-    if (telefono.value === "") {
-        telefono.classList.remove('verify');
-        telefono.classList.add('error');
-    } else {
-        telefono.classList.remove('error');
-        telefono.classList.add('verify');
-    }
-  });
-
-
-
-  direccion.addEventListener('keyup', function() {
-    if (direccion.value === "") {
-        direccion.classList.remove('verify');
-        direccion.classList.add('error');
-    } else {
-        direccion.classList.remove('error');
-        direccion.classList.add('verify');
-    }
-  });
-
-
-  tipo.addEventListener('change', function() {
-    if (tipo.value === "") {
-        tipo.classList.remove('verify');
-        tipo.classList.add('error');
-    } else {
-        tipo.classList.remove('error');
-        tipo.classList.add('verify');
-    }
-  });
-
-
-  documento.addEventListener('keyup', function() {
-    if (documento.value === "") {
-        documento.classList.remove('verify');
-        documento.classList.add('error');
-    } else {
-        documento.classList.remove('error');
-        documento.classList.add('verify');
-    }
-  });
-
-
-
-  correo.addEventListener('keyup', function() {
-    if (correo.value === "" ) {
-      correo.classList.remove('verify');
-      correo.classList.add('error');
-    }
-  });
-
+documento.addEventListener("keypress", numeros)
+telefono.addEventListener("keypress", numeros)
+nombre.addEventListener("keypress", (event)=>{
+    Sololetra(event, nombre)
+});
+apellido.addEventListener("keypress", (event)=>{
+    Sololetra(event, apellido)
+});
+correo.addEventListener("blur", (event)=>{
+    isCorreo(event, correo)
+});
